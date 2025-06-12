@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>ConvertAR</title>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="style.css">
+		<script src="./libs/focus-visible.js" defer></script>
+    
+    
+		<script type="module" src="model-viewer.js"></script>
+   	<script type="module" src="script.js"></script>
+    
+        
+
+    
+  
+	</head>
+	<body>
+		<model-viewer id="viewer" 
+          src="https://cdn.glitch.global/4da88eb2-b08b-43af-a732-a357fa49b917/chair-viewar.glb"
+                  
+                  style="width: 100%; height: 100vh;"
+                  
+                  autoplay
+                  auto-rotate
+                  camera-controls
+                  shadow-intensity="0.75"
+                  exposure="1"
+                  environment-image="neutral"
+                  min-camera-orbit='auto auto auto'
+                  max-camera-orbit='auto auto auto'
+                  modelcachesize="1"
+                  
+                  >
+   
+    
+<div class="controls">
+  <div style="margin-bottom: 10px;"> 
+    Scale: X: <input id="x" value="1" size="3" class="number">
+    Y: <input id="y" value="1" size="3" class="number">
+    Z: <input id="z" value="1" size="3" class="number">
+  </div>
+  <button class="export-btn" onclick="exportGLB()">Convert & Download GLB</button>
+  <button class="reset-btn" id="refreshButton">Clear Session</button>
+</div>
+
+<style>
+  .controls {
+    font-family:  Clarkson, Helvetica, Arial, sans-serif; font-size: 18px;
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    align-items: center;    /* Center them horizontally */
+  }
+  
+  .export-btn {
+    position: relative;         /* Establish a positioning context */
+    
+    color: white;               /* White text */
+    border: none;               /* Remove any default border */
+    border-radius: 9999px;      /* Fully rounded edges */
+    padding: 10px 20px;         /* Padding for appearance */
+    cursor: pointer;            /* Pointer cursor on hover */
+    font-size: 14px;            /* Adjust font-size as needed */
+    z-index: 1;                 /* Ensure it sits above the pseudo-element */
+    height: 40px;
+    width: 250px;
+  }
+  
+  .export-btn::before {
+    content: "";
+    position: absolute;
+    top: 0px;
+    left: -2px;
+    right: -2px;
+    bottom: 0px;
+    border-radius: inherit;     /* Inherit the border radius */
+    background: linear-gradient(45deg, blue, darkblue); /* Blue gradient */
+    z-index: -1;                /* Place behind the button */
+  }
+  
+  .export-btn:hover {
+    opacity: 0.9;               /* Optional hover effect */
+  }
+  
+  .reset-btn {
+    margin-top: 10px;           /* Space between the buttons */
+    font-size: 14px;
+    width: 120px;
+    height: 30px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+  
+  .reset-btn:hover {
+    opacity: 0.8;               /* Subtle hover effect */
+  }
+</style>
+
+<script>
+  var refreshButton = document.getElementById("refreshButton");
+  refreshButton.addEventListener("click", function() {
+    window.location.reload();
+  });
+</script>
+
+
+
+ 
+        
+      
+  
+<div id="title" style="position: relative; top: 10px; left: 50%; transform: translateX(-50%); font-family:  Clarkson, Helvetica, Arial, sans-serif; font-size: 18px; color: #a9a9a9; z-index: -1; text-align: center; pointer-events: none; width: 450px; line-height: 1.5;">
+  Drag & drop or upload a 3D file to convert into GLB.<br>
+  Supported formats: FBX, OBJ, STL, PLY, DRC, glTF
+</div>
+
+
+<style>
+@font-face {
+  font-family: 'Proxima Nova';
+  src: url('https://cdn.glitch.global/2ff826d4-271e-4b05-a4d8-77c81b9f6293/Proxima%20Nova%20Alt%20Light.otf?v=1742559537235') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+  
+  
+ @media (max-width: 768px) {
+  #title {
+    display: none;
+  }
+} 
+  
+         
+</style>
+      
+      
+      
+
+      
+      
+  <!-- logo button -->
+  <div class="logo-button">
+  
+      <img src="https://cdn.glitch.global/2ff826d4-271e-4b05-a4d8-77c81b9f6293/convbeta.png" alt="logo" id="logo-button-img">
+
+  </div>
+      
+     <script>
+    document.getElementById('logo-button-img').onclick = function() {
+      window.open('https://www.placeme.gr/convertar', '_blank');
+    };
+  </script>   
+      
+      
+<style>
+    .logo-button {
+      cursor: pointer;   
+  position: fixed;
+  top: 10px;   /* adjust as needed */
+  right: 5px; /* adjust as needed */
+  z-index: 1000; /* ensure it appears above other content */
+}
+
+#logo-button-img {
+  width: 200px; /* control the size of the image */
+  height: auto; /* maintain the aspect ratio */
+}  
+</style>
+      
+      
+<!-- Upload button -->
+<div class="upload-button" id="upload-button">
+<input type="file" accept=".glb,.gltf,.fbx,.obj,.stl,.ply,.drc" id="file-upload" />
+  <label for="file-upload">
+    <img src="https://cdn.glitch.global/2ff826d4-271e-4b05-a4d8-77c81b9f6293/upconv4.png" alt="Upload" id="upload-button-img">
+    <span class="tooltip-text">Upload model</span>
+  </label>
+</div>
+
+
+     
+ <style>
+      
+    .upload-button {
+    position: absolute;
+    top: 10px;
+    left: 5px; /* Adjust the position as needed */
+    z-index: 2;
+  }
+
+
+   .upload-button img {
+    width: 45px; /* Adjust as needed */
+    height: 45px; /* Adjust as needed */
+    cursor: pointer;
+  }
+
+  .upload-button input[type="file"] {
+    display: none;
+  }
+
+  .upload-button label {
+    cursor: pointer;
+  }
+
+  .upload-button .tooltip-text {
+    font-family:  Clarkson, Helvetica, Arial, sans-serif; font-size: 18px;
+            visibility: hidden;
+            width: 150px;
+     height: 30px;
+    line-height: 30px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            top: 40%;
+            left: 105%; /* Position to the right of the button */
+            margin-left: 10px; /* Add some space between the button and tooltip */
+            transform: translateY(-50%); /* Center the tooltip vertically */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .upload-button .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 100%; /* Arrow on left */
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent #555 transparent transparent;
+            transform: translateY(-50%); /* Center the arrow vertically */
+        }
+
+        .upload-button:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }    
+      
+      
+      </style>     
+
+     
+    
+</model-viewer>
+ 
+    
+
+  
+    <style>
+      model-viewer {
+
+  --progress-bar-color: blue;
+   --progress-bar-height: 2.5px;
+      
+}
+    </style>
+    
+    
+
+    
+   <script>
+const modelViewerTransform = document.querySelector("model-viewer#viewer");
+const x = document.querySelector('#x');
+const y = document.querySelector('#y');
+const z = document.querySelector('#z');
+
+const updateScale = () => {
+  modelViewerTransform.scale = `${x.value} ${y.value} ${z.value}`;
+};
+
+x.addEventListener('input', () => {
+  updateScale();
+});
+y.addEventListener('input', () => {
+  updateScale();
+});
+z.addEventListener('input', () => {
+  updateScale();
+});
+</script> 
+    
+    
+    
+  
+  
+    
+
+  
+        
+<script>
+  async function exportGLB(){
+    const modelViewer = document.getElementById("viewer");
+    
+    const glTF = await modelViewer.exportScene();
+    const file = new File([glTF], "export.glb");
+    const link = document.createElement("a");
+    link.download =file.name;
+    link.href = URL.createObjectURL(file);
+    link.click();
+  }
+  
+  
+      
+</script>
+    
+    
+    
+    
+    
+	
+  
+  
+  
+  
+<script type="module">
+import { Mesh, MeshStandardMaterial } from './three.module.js';
+
+window.addEventListener('load', function () {
+  // Experimental: Don't do this at home
+  const FAKE_JSON = '{"asset":{"version":"2.0"},"scenes":[{"name":"Scene"}],"scene":0}';
+  const FAKE_SCENE = URL.createObjectURL(new Blob([FAKE_JSON], { type: "application/json" }));
+  const DEFAULT_MATERAL = new MeshStandardMaterial({ color: 0x606060, roughness: 1.0, metalness: 0.0 });
+  
+  // Assuming your <model-viewer> element has id="viewer"
+  const viewer = document.getElementById("viewer");
+  // Use the internal symbol to access the scene (as in your code)
+  const scene = viewer[Object.getOwnPropertySymbols(viewer)[14]];
+
+  function setCustomObject(object) {
+    viewer.src = FAKE_SCENE;
+    scene.setObject(object);
+  }
+
+  function handleFile(file) {
+    const extension = file.name.split('.').pop().toLowerCase();
+    const reader = new FileReader();
+
+    switch (extension) {
+      case 'drc':
+        reader.addEventListener('load', async function (event) {
+          const { DRACOLoader } = await import('./loaders/DRACOLoader.js');
+          const loader = new DRACOLoader();
+          loader.setDecoderPath('./libs/');
+          loader.setDecoderConfig({ type: 'js' });
+          loader.decodeDracoFile(event.target.result, function (geometry) {
+            geometry.computeVertexNormals();
+            setCustomObject(new Mesh(geometry, DEFAULT_MATERAL));
+          });
+        }, false);
+        reader.readAsArrayBuffer(file);
+        break;
+
+      case 'fbx':
+        reader.addEventListener('load', async function (event) {
+          const { FBXLoader } = await import('./loaders/FBXLoader.js');
+          const object = new FBXLoader().parse(event.target.result);
+          object.traverse(function (child) {
+            if (child.material && child.material.isMeshPhongMaterial) {
+              child.material = DEFAULT_MATERAL;
+            }
+          });
+          setCustomObject(object);
+        }, false);
+        reader.readAsArrayBuffer(file);
+        break;
+
+      case 'glb':
+      case 'gltf':
+        viewer.src = URL.createObjectURL(file);
+        break;
+
+      case 'obj':
+        reader.addEventListener('load', async function (event) {
+          const { OBJLoader } = await import('./loaders/OBJLoader.js');
+          const object = new OBJLoader().parse(event.target.result);
+          object.traverse(function (child) {
+            if (child.material && child.material.isMeshPhongMaterial) {
+              child.material = DEFAULT_MATERAL;
+            }
+          });
+          setCustomObject(object);
+        }, false);
+        reader.readAsText(file);
+        break;
+
+      case 'ply':
+        reader.addEventListener('load', async function (event) {
+          const { PLYLoader } = await import('./loaders/PLYLoader.js');
+          const geometry = new PLYLoader().parse(event.target.result);
+          geometry.computeVertexNormals();
+          setCustomObject(new Mesh(geometry, DEFAULT_MATERAL));
+        }, false);
+        reader.readAsArrayBuffer(file);
+        break;
+
+      case 'stl':
+        reader.addEventListener('load', async function (event) {
+          const { STLLoader } = await import('./loaders/STLLoader.js');
+          const geometry = new STLLoader().parse(event.target.result);
+          setCustomObject(new Mesh(geometry, DEFAULT_MATERAL));
+        }, false);
+        reader.readAsBinaryString(file);
+        break;
+    }
+  }
+
+  // Attach event listener for the file input
+  const fileInput = document.getElementById("file-upload");
+  fileInput.addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      handleFile(file);
+    }
+  });
+
+  // Also keep your drag & drop listeners:
+  document.addEventListener('dragover', function (event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  }, false);
+
+  document.addEventListener('drop', function (event) {
+    event.preventDefault();
+    handleFile(event.dataTransfer.files[0]);
+  }, false);
+
+  // Chrome OS launchData code...
+  if ('launchData' in window && Array.isArray(window.launchData.items)) {
+    var item = window.launchData.items[0];
+    item.entry.file(handleFile);
+  }
+});
+</script>
+
+    
+   </body> 
+    
+</html>
